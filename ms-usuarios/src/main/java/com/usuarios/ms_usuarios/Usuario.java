@@ -29,7 +29,7 @@ public class Usuario {
         this.numeroVivienda=numeroVivienda;
         this.comuna=comuna;
         this.region=region;
-        this.region=referenciaDireccion;
+        this.referenciaDireccion=referenciaDireccion;
         this.codigoPostal=codigoPostal;
         this.mail=mail;
         this.numeroContacto=numeroContacto;
