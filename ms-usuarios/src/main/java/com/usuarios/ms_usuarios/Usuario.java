@@ -75,7 +75,7 @@ public class Usuario {
         this.mail = mail;
         this.numeroContacto = numeroContacto;
     }
-    // Métodos Getter que necesitas para la serialización
+    // Métodos Getter 
     public int getId() { return id; }
     public String getNombre() { return nombre; }
     public String getApellido() { return apellido; } 

@@ -1,8 +1,13 @@
 package com.usuarios.ms_usuarios;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.*;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
@@ -18,14 +23,30 @@ public class UsuarioController {
 
     //Listar todos los Usuarios
     @GetMapping
-    public List<Usuario> obteneUsuarios() {
-        return usuarioRepository.findAll();
+    public ResponseEntity<CollectionModel<EntityModel<Usuario>>> obtenerUsuarios() {
+        // 1. Obtener la lista de entidades
+        List<Usuario> usuarios = usuarioRepository.findAll();
+
+        // 2. Convertir cada Usuario a EntityModel
+        List<EntityModel<Usuario>> usuarioModels = usuarios.stream()
+            .map(usuario -> EntityModel.of(usuario, 
+                linkTo(methodOn(UsuarioController.class).buscar(usuario.getId())).withRel("buscar usuario por ID"),
+                linkTo(methodOn(UsuarioController.class).eliminar(usuario.getId())).withRel("eliminar"),
+                linkTo(methodOn(UsuarioController.class).actualizar(usuario.getId(), null)).withRel("actualizar")
+            ))
+            .collect(Collectors.toList());
+
+        // 3. Envolver la lista en CollectionModel y añadir el enlace 'self' para la colección
+        CollectionModel<EntityModel<Usuario>> collectionModel = CollectionModel.of(usuarioModels, 
+            linkTo(methodOn(UsuarioController.class).obtenerUsuarios()).withSelfRel());
+        
+        return ResponseEntity.ok(collectionModel);
     }
     //Listar  Usuario por ID
     @GetMapping("/{id}")
     public ResponseEntity<Usuario> buscar(@PathVariable Integer id) {
         return usuarioRepository.findById(id).map(ResponseEntity::ok)
-                   .orElse(ResponseEntity.notFound().build()); // NOS TRAE EL OBJETO POR ID 
+                   .orElse(ResponseEntity.notFound().build()); 
     }
     //Registro Usuario
     @PostMapping
