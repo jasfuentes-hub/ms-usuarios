@@ -19,7 +19,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Pruebas unitarias para la capa del controlador (UsuarioController).
-
  */
 // @WebMvcTest carga solo la capa web (Controller)
 @WebMvcTest(UsuarioController.class)
@@ -41,7 +40,8 @@ public class UsuarioControllerTest {
      */
     private Usuario createTestUser(Integer id, String nombre, String mail, int numeroVivienda, int codigoPostal, int numeroContacto) {
         Usuario user = new Usuario();
-        user.setId(id != null ? id : 0); // La entidad real usa int, no Integer. Usamos 0 si es nulo (para new user).
+        // La entidad real usa int, no Integer. Usamos 0 si es nulo (para new user).
+        user.setId(id != null ? id : 0); 
         user.setNombre(nombre);
         user.setApellido("TestApellido");
         user.setRut("11111111-1");
@@ -79,8 +79,10 @@ public class UsuarioControllerTest {
         mockMvc.perform(get("/usuario")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // 200 OK
-                .andExpect(jsonPath("$.size()").value(2))
-                .andExpect(jsonPath("$[0].nombre").value("Alice"));
+                // CORRECCIÓN: Se debe usar la ruta JSON anidada: $.embedded.usuarioList
+                // La prueba original fallaba porque buscaba el array en la raíz ($[0])
+                .andExpect(jsonPath("$._embedded.usuarioList.size()").value(2))
+                .andExpect(jsonPath("$._embedded.usuarioList[0].nombre").value("Alice"));
     }
 
     /**
@@ -170,7 +172,7 @@ public class UsuarioControllerTest {
 
         // Usuario que sale después del save
         Usuario finalUser = createTestUser(userId, updatedData.getNombre(), updatedData.getMail(), 
-                                           updatedData.getNumeroVivienda(), originalUser.getCodigoPostal(), originalUser.getNumeroContacto());
+                                             updatedData.getNumeroVivienda(), originalUser.getCodigoPostal(), originalUser.getNumeroContacto());
         finalUser.setApellido(updatedData.getApellido()); // Aplicamos el cambio de apellido
 
         
